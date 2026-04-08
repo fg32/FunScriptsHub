@@ -120,6 +120,7 @@ ByName.BorderSizePixel = 0
 ByName.BackgroundColor3 = Color3.new(1.00, 1.00, 1.00)
 ByName.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 ByName.TextSize = 14
+ByName.ClearTextOnFocus = false
 ByName.Size = UDim2.new(0.46, 0.00, 0.11, 0.00)
 ByName.TextColor3 = Color3.new(0.00, 0.00, 0.00)
 ByName.BorderColor3 = Color3.new(0.00, 0.00, 0.00)
@@ -160,6 +161,7 @@ ByPath.BorderSizePixel = 0
 ByPath.BackgroundColor3 = Color3.new(1.00, 1.00, 1.00)
 ByPath.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 ByPath.TextSize = 14
+ByPath.ClearTextOnFocus = false
 ByPath.Size = UDim2.new(0.46, 0.00, 0.11, 0.00)
 ByPath.TextColor3 = Color3.new(0.00, 0.00, 0.00)
 ByPath.BorderColor3 = Color3.new(0.00, 0.00, 0.00)
@@ -278,7 +280,8 @@ Clear.MouseButton1Click:Connect(function()
 end)
 
 UIS.InputBegan:Connect(function(input, gameProcessedEvent)
-	if input.KeyCode == Enum.KeyCode.Home then
-		RandomGui.Visible = not RandomGui.Visible
+
+	if input.KeyCode == Enum.KeyCode.Home or input.KeyCode == Enum.KeyCode.KeypadSeven then
+		RandomGui.Enabled = not RandomGui.Enabled
 	end
 end)
