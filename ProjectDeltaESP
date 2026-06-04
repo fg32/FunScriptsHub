@@ -1,0 +1,458 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/Testing/refs/heads/FluentNoUpdate/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/Testing/refs/heads/FluentNoUpdate/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/Testing/refs/heads/FluentNoUpdate/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+	Title = "UnExcellent",
+	SubTitle = "to Bape with love",
+	TabWidth = 160,
+	Size = UDim2.fromOffset(580, 460),
+	Acrylic = false,
+	Theme = "Dark",
+	MinimizeKey = Enum.KeyCode.CapsLock
+})
+
+local Tabs = {
+	Main = Window:AddTab({ Title = "Main", Icon = "" }),
+	ESP = Window:AddTab({ Title = "ESP", Icon = "camera" }),
+	Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+}
+
+local Options = Fluent.Options
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local MainScreenGui = CoreGui:WaitForChild("ScreenGui")
+
+local INVISIBLE_COLOR = Color3.new(0.2, 0.5, 1)
+
+local ESP = {}
+ESP.__index = ESP
+
+function ESP.GetHealthColor(healthPercent)
+	if healthPercent > 66 then
+		return Color3.new(0.2, 1, 0.2)
+	elseif healthPercent > 33 then
+		return Color3.new(1, 1, 0.2)
+	else
+		return Color3.new(1, 0.2, 0.2)
+	end
+end
+
+function ESP.new(player)
+	if player == LocalPlayer then 
+		return nil 
+	end
+	
+	local self = setmetatable({}, ESP)
+
+	self.Player = player
+	self.CurrentFolder = nil
+	self.DistanceLabel = nil
+	self.HealthLabel = nil
+	self.RenderConnection = nil
+	self.HumanoidConnection = nil
+	self.TransparencyConnection = nil
+	self.IsInvisible = false
+
+	self:Init()
+	return self
+end
+
+function ESP:GetBodyParts(character)
+	local parts = {}
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid and humanoid.RigType == Enum.HumanoidRigType.R15 then
+		local names = {
+			"Head", 
+			"UpperTorso", 
+			"LowerTorso", 
+			"LeftUpperArm", 
+			"LeftLowerArm", 
+			"LeftHand",
+			"RightUpperArm", 
+			"RightLowerArm", 
+			"RightHand", 
+			"LeftUpperLeg", 
+			"LeftLowerLeg", 
+			"LeftFoot", 
+			"RightUpperLeg", 
+			"RightLowerLeg", 
+			"RightFoot"
+		}
+		
+		for _, name in ipairs(names) do
+			local p = character:FindFirstChild(name)
+			if p and p:IsA("BasePart") then 
+				table.insert(parts, p) 
+			end
+		end
+	else
+		local names = {
+			"Head", 
+			"Torso", 
+			"Left Arm", 
+			"Right Arm", 
+			"Left Leg", 
+			"Right Leg"
+		}
+		
+		for _, name in ipairs(names) do
+			local p = character:FindFirstChild(name)
+			if p and p:IsA("BasePart") then 
+				table.insert(parts, p) 
+			end
+		end
+	end
+	
+	return parts
+end
+
+function ESP:Cleanup()
+	if self.HumanoidConnection then
+		self.HumanoidConnection:Disconnect()
+		self.HumanoidConnection = nil
+	end
+	
+	if self.TransparencyConnection then
+		self.TransparencyConnection:Disconnect()
+		self.TransparencyConnection = nil
+	end
+	
+	if self.CurrentFolder then
+		self.CurrentFolder:Destroy()
+		self.CurrentFolder = nil
+	end
+	self.DistanceLabel = nil
+	self.HealthLabel = nil
+end
+
+function ESP:UpdateHealthLabelColor()
+	if not self.HealthLabel then 
+		return 
+	end
+
+	if self.IsInvisible then
+		self.HealthLabel.TextColor3 = INVISIBLE_COLOR
+	else
+		local character = self.Player.Character
+		if character then
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				local healthPercent = (humanoid.Health / humanoid.MaxHealth) * 100
+				self.HealthLabel.TextColor3 = ESP.GetHealthColor(healthPercent)
+			end
+		end
+	end
+end
+
+function ESP:CreateVisuals(character)
+	self:Cleanup()
+
+	local folder = Instance.new("Folder")
+	folder.Name = self.Player.Name .. "_ESP_Folder"
+	folder.Parent = MainScreenGui
+	self.CurrentFolder = folder
+
+	local parts = self:GetBodyParts(character)
+	local head = character:FindFirstChild("Head")
+
+	for _, part in ipairs(parts) do
+		local xray = Instance.new("BoxHandleAdornment")
+		xray.Name = "XrayPart"
+		xray.Size = part.Size
+		xray.Adornee = part
+		xray.Shading = Enum.AdornShading.XRay
+		xray.ZIndex = 1
+		xray.Transparency = Options.ESPXrayColor.Transparency
+		xray.Color3 = Options.ESPXrayColor.Value
+		xray.Parent = folder
+
+		local shaded = Instance.new("SelectionBox")
+		shaded.Name = "ShadedPart"
+		shaded.Adornee = part
+		shaded.Transparency = 0
+		shaded.Color3 = Options.ESPShadedColor.Value
+		shaded.Parent = folder
+	end
+
+	table.clear(parts)
+
+	if head then
+		local bb = Instance.new("BillboardGui")
+		bb.Name = "Tag"
+		bb.Size = UDim2.new(0, 250, 0, 100)
+		bb.StudsOffset = Vector3.new(0, 3, 0)
+		bb.AlwaysOnTop = true
+		bb.Adornee = head
+		bb.Parent = folder
+
+		local layout = Instance.new("UIListLayout")
+		layout.FillDirection = Enum.FillDirection.Horizontal
+		layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		layout.Padding = UDim.new(0, 4)
+		layout.Parent = bb
+
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Text = self.Player.Name
+		nameLabel.TextColor3 = Color3.new(1, 1, 1)
+		nameLabel.TextStrokeTransparency = 0
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.AutomaticSize = Enum.AutomaticSize.XY
+		nameLabel.Font = Enum.Font.SourceSansBold
+		nameLabel.TextSize = 16
+		nameLabel.Parent = bb
+
+		self.HealthLabel = Instance.new("TextLabel")
+		self.HealthLabel.TextColor3 = Color3.new(0.2, 1, 0.2)
+		self.HealthLabel.TextStrokeTransparency = 0
+		self.HealthLabel.BackgroundTransparency = 1
+		self.HealthLabel.AutomaticSize = Enum.AutomaticSize.XY
+		self.HealthLabel.Font = Enum.Font.SourceSans
+		self.HealthLabel.TextSize = 14
+		self.HealthLabel.Parent = bb
+
+		self.DistanceLabel = Instance.new("TextLabel")
+		self.DistanceLabel.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+		self.DistanceLabel.TextStrokeTransparency = 0
+		self.DistanceLabel.BackgroundTransparency = 1
+		self.DistanceLabel.AutomaticSize = Enum.AutomaticSize.XY
+		self.DistanceLabel.Font = Enum.Font.SourceSans
+		self.DistanceLabel.TextSize = 14
+		self.DistanceLabel.Parent = bb
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			self.HealthLabel.Text = string.format("%.0f/%.0f", humanoid.Health, humanoid.MaxHealth)
+			self:UpdateHealthLabelColor()
+			
+			self.HumanoidConnection = humanoid.HealthChanged:Connect(function()
+				if self.HealthLabel and humanoid then
+					self.HealthLabel.Text = string.format("%.0f/%.0f", humanoid.Health, humanoid.MaxHealth)
+					self:UpdateHealthLabelColor()
+				end
+			end)
+		end
+
+		local root = character:FindFirstChild("Head")
+		if root then
+			self.TransparencyConnection = root:GetPropertyChangedSignal("Transparency"):Connect(function()
+				local wasInvisible = self.IsInvisible
+				self.IsInvisible = root.Transparency == 1
+				
+				if wasInvisible ~= self.IsInvisible then
+					self:UpdateHealthLabelColor()
+				end
+			end)
+			
+			self.IsInvisible = root.Transparency == 1
+			self:UpdateHealthLabelColor()
+		end
+	end
+end
+
+function ESP:Update()
+	if not self.DistanceLabel or not self.HealthLabel or not self.Player.Character then 
+		return 
+	end
+
+	local root = self.Player.Character:FindFirstChild("HumanoidRootPart")
+	local localRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+	if root and localRoot then
+		local dist = (root.Position - localRoot.Position).Magnitude
+		self.DistanceLabel.Text = string.format("[%d m]", math.floor(dist))
+		
+		if self.CurrentFolder then 
+			self.CurrentFolder.Parent = MainScreenGui 
+		end
+	else
+		if self.CurrentFolder then 
+			self.CurrentFolder.Parent = nil 
+		end
+	end
+end
+
+function ESP:Init()
+	self.Player.CharacterAdded:Connect(function(char)
+		task.wait(0.2)
+		self:CreateVisuals(char)
+	end)
+
+	if self.Player.Character then
+		task.spawn(function() 
+			self:CreateVisuals(self.Player.Character) 
+		end)
+	end
+
+	self.RenderConnection = RunService.RenderStepped:Connect(function()
+		self:Update()
+	end)
+end
+
+function ESP:Destroy()
+	if self.RenderConnection then 
+		self.RenderConnection:Disconnect()
+		self.RenderConnection = nil
+	end
+	
+	self:Cleanup()
+end
+
+local ESP_CACHE = {}
+local ESPEnabled = false
+
+local PlayerAddedConnection = nil
+local PlayerRemovingConnection = nil
+local RenderConnection = nil
+
+local function AddPlayer(p)
+	if p ~= LocalPlayer and ESPEnabled then
+		if not ESP_CACHE[p] then
+			ESP_CACHE[p] = ESP.new(p)
+		end
+	end
+end
+
+local function RemovePlayer(p)
+	if ESP_CACHE[p] then
+		ESP_CACHE[p]:Destroy()
+		ESP_CACHE[p] = nil
+	end
+end
+
+local function UpdateAllESP()
+	if ESPEnabled then
+		for _, p in ipairs(Players:GetPlayers()) do
+			AddPlayer(p)
+		end
+	else
+		for p, esp in pairs(ESP_CACHE) do
+			if esp then
+				esp:Destroy()
+			end
+			ESP_CACHE[p] = nil
+		end
+	end
+end
+
+local function CleanupAllESP()
+	for p, esp in pairs(ESP_CACHE) do
+		if esp then
+			esp:Destroy()
+		end
+		ESP_CACHE[p] = nil
+	end
+	
+	table.clear(ESP_CACHE)
+end
+
+do
+	local Toggle = Tabs.ESP:AddToggle("ESPToggle", {
+		Title = "ESP Enabled",
+		Default = false
+	})
+
+	Toggle:OnChanged(function(Value)
+		ESPEnabled = Value
+		UpdateAllESP()
+	end)
+
+	local XrayColor = Tabs.ESP:AddColorpicker("ESPXrayColor", {
+		Title = "Xray Color",
+		Default = Color3.fromRGB(20, 12, 255),
+		Transparency = 0.6
+	})
+
+	XrayColor:OnChanged(function()
+		for _, esp in pairs(ESP_CACHE) do
+			if esp and esp.CurrentFolder then
+				for _, part in ipairs(esp.CurrentFolder:GetChildren()) do
+					if part.Name == "XrayPart" then
+						part.Color3 = Options.ESPXrayColor.Value
+						part.Transparency = Options.ESPXrayColor.Transparency
+					end
+				end
+			end
+		end
+	end)
+
+	local ShadedColor = Tabs.ESP:AddColorpicker("ESPShadedColor", {
+		Title = "Shaded Color",
+		Default = Color3.fromRGB(200, 0, 0)
+	})
+
+	ShadedColor:OnChanged(function()
+		for _, esp in pairs(ESP_CACHE) do
+			if esp and esp.CurrentFolder then
+				for _, part in ipairs(esp.CurrentFolder:GetChildren()) do
+					if part.Name == "ShadedPart" then
+						part.Color3 = Options.ESPShadedColor.Value
+					end
+				end
+			end
+		end
+	end)
+
+	PlayerAddedConnection = Players.PlayerAdded:Connect(AddPlayer)
+
+	PlayerRemovingConnection = Players.PlayerRemoving:Connect(RemovePlayer)
+
+	for _, p in ipairs(Players:GetPlayers()) do
+		AddPlayer(p)
+	end
+
+	-- Тут начинай аимбот
+
+	local HookedFunction = Fluent.Destroy
+
+	Fluent.Destroy = function(self, ...)
+		ESPEnabled = false
+		
+		if PlayerAddedConnection then
+			PlayerAddedConnection:Disconnect()
+			PlayerAddedConnection = nil
+		end
+		
+		if PlayerRemovingConnection then
+			PlayerRemovingConnection:Disconnect()
+			PlayerRemovingConnection = nil
+		end
+		
+		if RenderConnection then
+			RenderConnection:Disconnect()
+			RenderConnection = nil
+		end
+		
+		CleanupAllESP()
+		
+		table.clear(ESP_CACHE)
+		ESP_CACHE = nil
+		
+		return HookedFunction(self, ...)
+	end
+end
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/ExceptBape")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+	Title = "ESP System",
+	Content = "ESP loaded successfully!",
+	Duration = 5
+})
+
+SaveManager:LoadAutoloadConfig()
