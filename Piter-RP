@@ -1,0 +1,112 @@
+-- Anticheat crack Piter-RP 139267548185355
+
+queue_on_teleport([[
+    print("doing")
+
+    task.spawn(function()
+        print("loadingcobalt")
+        loadstring(game:HttpGet("https://gitlab.com/upio/cobalt/-/releases/permalink/latest/downloads/Cobalt.luau"))() -- "proxy" not by original author 
+    end)
+    
+    task.spawn(function()
+        game.DescendantAdded:Connect(function(instance)
+            if instance.Name == "Spy" or instance.Name == "Hide" or instance.Name == "StaminaSystem" then
+                local thread = getscriptthread(instance)
+                task.cancel(thread)
+                print(coroutine.status(thread))
+                print("Disabled anticheat")
+            elseif instance.Name == "LocalScript" and (instance.Parent.Name == "PlayerScripts" or instance.Parent.Name == "StarterPlayerSripts") then
+                local thread = getscriptthread(instance)
+                task.cancel(thread)
+                print(coroutine.status(thread))
+                print("Disabled localscript")
+            end
+        end)
+    end)
+
+    
+
+
+    local ReplicatedStorage = game:GetService("ReplicatedStorage");
+    local ContentProvider = game:GetService("ContentProvider");
+    local Lighting = game:GetService("Lighting");
+    local Players = game:GetService("Players");
+
+    local LocalPlayer = Players.LocalPlayer;
+    local Camera = workspace:WaitForChild("Camera", 3);
+    local worldparams = {
+        Ambient = Lighting.Ambient,
+        Gravity = workspace.Gravity,
+        Brightness = Lighting.Brightness
+    };
+    local AdminREvent = Instance.new("RemoteEvent");
+    local RemoteFunction = Instance.new("RemoteFunction");
+    AdminREvent.Name = "Admin";
+    AdminREvent.Parent = ReplicatedStorage.Events;
+
+    
+    local antidecomptable = {};
+    local cheatpanelnames = { "PiterRP_HD", "main", "ModernCheatMenu" };
+    local u5 = {};
+    local reactdebounce = false;
+    local references = {
+        Dex = { "rbxassetid://483448923", "rbxassetid://5448127505", "rbxassetid://5054663650", "rbxassetid://6511490623", "rbxassetid://6579106223", "rbxassetid://135148380892747", "rbxassetid://129589545519436" },
+        RemoteSpy = { "rbxassetid://9886981409", "rbxassetid://5597105827", "rbxassetid://5597108117" },
+        PiterRPCheatPanel2 = { "rbxassetid://82795327169782", "rbxassetid://122602482915425", "rbxassetid://86483056008611", "rbxassetid://80990588449079" },
+        M7 = { "rbxassetid://117286241528046", "rbxassetid://132140133843415" },
+        ModernCheatMenu = { "rbxassetid://3570695787" },
+        Cerberus = { "rbxassetid://136497541793809" },
+        IY = { "rbxassetid://1204397029", "rbxassetid://3523243755" },
+        AimBotUI = { "rbxassetid://5554236805" },
+        LowHubUI = { "rbxassetid://111859823126304", "rbxassetid://91926937917050" }
+    };
+
+    for _ = 1, 300 do
+        antidecomptable = { antidecomptable };
+    end;
+
+    local function VAR() -- Line: 55
+        -- upvalues: LocalPlayer (copy)
+        local v8 = math.random(10000, 99999);
+
+        return {
+            math.random(10000, 99999),
+            LocalPlayer.UserId,
+            LocalPlayer.UserId - v8,
+            LocalPlayer.UserId + v8,
+            v8,
+            workspace:GetServerTimeNow() - v8
+        };
+    end;
+
+    local function Invoke(CheatName) -- Line: 59
+        -- upvalues: ReplicatedStorage (copy), VAR (copy)
+        ReplicatedStorage.Events.Report:InvokeServer(CheatName, VAR());
+    end;
+
+
+
+
+
+
+    task.spawn(function() -- Line: 105
+        -- upvalues: ReplicatedStorage (copy), Invoke (copy), AdminREvent (copy), antidecomptable (ref), Players (copy), Lighting (copy), worldparams (copy), Report (copy), LocalPlayer (copy), cheatpanelnames (copy), RemoteFunction (copy)
+        while task.wait(5) do
+
+            task.spawn(function() -- Line: 111
+                -- upvalues: Invoke (ref)
+                Invoke("Failure");
+            end);
+            local v16 = gcinfo();
+            pcall(function() -- Line: 115
+                -- upvalues: AdminREvent (ref), antidecomptable (ref)
+                AdminREvent:FireServer(antidecomptable);
+            end);
+
+            
+        end;
+    end);
+
+
+]])
+game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
