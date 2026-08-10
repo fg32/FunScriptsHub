@@ -1,0 +1,47 @@
+getgenv().lol = true
+
+while getgenv().lol == true do 
+    local finded = false
+    local function Mine(ore)
+        game.Players.LocalPlayer.Character:PivotTo(ore.CFrame * CFrame.new(Vector3.new(0,-5,0)))
+        task.wait(1)
+        fireproximityprompt(ore.ProximityPrompt)
+    end
+
+    for i,v in workspace.Jobs["\208\168\208\176\209\133\209\130\209\145\209\128"].Ores:GetChildren() do
+        
+        if v.Color == Color3.fromRGB(245, 205, 48) and v.Transparency == 0 then
+            finded = true
+            Mine(v)
+            break
+        end
+            
+    end
+
+    if not finded then
+        for i,v in workspace.Jobs["\208\168\208\176\209\133\209\130\209\145\209\128"].Ores:GetChildren() do
+        
+            if v.Color == Color3.fromRGB(205, 205, 205) and v.Transparency == 0 then
+                finded = true
+                Mine(v)
+                break
+            end
+
+        end
+            
+    end
+
+    if not finded then
+        for i,v in workspace.Jobs["\208\168\208\176\209\133\209\130\209\145\209\128"].Ores:GetChildren() do
+        
+            if v.Color == Color3.fromRGB(213, 115, 61) and v.Transparency == 0 then
+                finded = true
+                Mine(v)
+                break
+            end
+
+        end
+    end
+    task.wait(2)
+end
+print("lol")
