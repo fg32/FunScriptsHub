@@ -2,20 +2,21 @@
 
 queue_on_teleport([[
     print("doing")
-
-    task.spawn(function()
-        print("loadingcobalt")
-        loadstring(game:HttpGet("https://gitlab.com/upio/cobalt/-/releases/permalink/latest/downloads/Cobalt.luau"))() -- "proxy" not by original author 
-    end)
     
     task.spawn(function()
         game.DescendantAdded:Connect(function(instance)
+            if not instance:IsA("LocalScript") then return end
+
+            if instance.Parent.Parent.Name == "StarterPlayerScripts" then return end
+
             if instance.Name == "Spy" or instance.Name == "Hide" or instance.Name == "StaminaSystem" then
+                print(instance:GetFullName())
                 local thread = getscriptthread(instance)
                 task.cancel(thread)
                 print(coroutine.status(thread))
                 print("Disabled anticheat")
             elseif instance.Name == "LocalScript" and (instance.Parent.Name == "PlayerScripts" or instance.Parent.Name == "StarterPlayerSripts") then
+                print(instance:GetFullName())
                 local thread = getscriptthread(instance)
                 task.cancel(thread)
                 print(coroutine.status(thread))
@@ -32,7 +33,6 @@ queue_on_teleport([[
     local Lighting = game:GetService("Lighting");
     local Players = game:GetService("Players");
 
-    local LocalPlayer = Players.LocalPlayer;
     local Camera = workspace:WaitForChild("Camera", 3);
     local worldparams = {
         Ambient = Lighting.Ambient,
@@ -42,7 +42,9 @@ queue_on_teleport([[
     local AdminREvent = Instance.new("RemoteEvent");
     local RemoteFunction = Instance.new("RemoteFunction");
     AdminREvent.Name = "Admin";
-    AdminREvent.Parent = ReplicatedStorage.Events;
+    task.spawn(function()
+        AdminREvent.Parent = ReplicatedStorage:WaitForChild("Events")
+    end)
 
     
     local antidecomptable = {};
@@ -66,14 +68,12 @@ queue_on_teleport([[
     end;
 
     local function VAR() -- Line: 55
-        -- upvalues: LocalPlayer (copy)
         local v8 = math.random(10000, 99999);
-
         return {
             math.random(10000, 99999),
-            LocalPlayer.UserId,
-            LocalPlayer.UserId - v8,
-            LocalPlayer.UserId + v8,
+            Players.LocalPlayer.UserId,
+            Players.LocalPlayer.UserId - v8,
+            Players.LocalPlayer.UserId + v8,
             v8,
             workspace:GetServerTimeNow() - v8
         };
@@ -90,7 +90,7 @@ queue_on_teleport([[
 
 
     task.spawn(function() -- Line: 105
-        -- upvalues: ReplicatedStorage (copy), Invoke (copy), AdminREvent (copy), antidecomptable (ref), Players (copy), Lighting (copy), worldparams (copy), Report (copy), LocalPlayer (copy), cheatpanelnames (copy), RemoteFunction (copy)
+        -- upvalues: ReplicatedStorage (copy), Invoke (copy), AdminREvent (copy), antidecomptable (ref), Players (copy), Lighting (copy), worldparams (copy), Report (copy), cheatpanelnames (copy), RemoteFunction (copy)
         while task.wait(5) do
 
             task.spawn(function() -- Line: 111
