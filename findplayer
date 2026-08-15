@@ -1,4 +1,5 @@
 print("start")
+task.wait(5)
 print(game:IsLoaded())
 if not game:IsLoaded() then game.Loaded:Wait() end
 print(getgenv().currentvalue)
