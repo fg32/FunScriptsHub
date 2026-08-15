@@ -31,5 +31,5 @@ end
 print("notfinded", getgenv().currentvalue)
 getgenv().currentvalue = tonumber(getgenv().currentvalue) + 1
 writefile("currentvalue", tostring(getgenv().currentvalue))
-
+queueonteleport(`loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/FunScriptsHub/refs/heads/main/findplayer"))()`)
 game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, getgenv().servers[getgenv().currentvalue])
