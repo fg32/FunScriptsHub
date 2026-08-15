@@ -1,3 +1,5 @@
+print("start")
+print(getgenv().currentvalue)
 if getgenv().currentvalue == nil then
     getgenv().currentvalue = 1
 end
@@ -6,7 +8,7 @@ game:WaitForChild("Players", 10)
 task.wait(1)
 print("findings")
 for i,v in game.Players:GetChildren() do
-    if string.match( , "mini") then
+    if string.match(v.Name , "mini") then
         print("FINDED-----------")
         getgenv().currentvalue = nil
         return
