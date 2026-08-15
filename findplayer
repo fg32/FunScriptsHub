@@ -1,4 +1,5 @@
 print("start")
+print(game:IsLoaded())
 if not game:IsLoaded() then game.Loaded:Wait() end
 print(getgenv().currentvalue)
 if getgenv().currentvalue == nil then
