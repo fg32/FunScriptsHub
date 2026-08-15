@@ -1,4 +1,5 @@
 print("start")
+game.Loaded:Wait()
 print(getgenv().currentvalue)
 if getgenv().currentvalue == nil then
     getgenv().currentvalue = 1
@@ -16,6 +17,6 @@ for i,v in game.Players:GetChildren() do
 end
 print("notfinded" .. getgenv().currentvalue)
 getgenv().currentvalue += 1
-
+print("next")
 queueonteleport(`loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/FunScriptsHub/refs/heads/main/findplayer"))()`)
 game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, getgenv().servers[getgenv().currentvalue])
