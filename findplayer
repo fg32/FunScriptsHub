@@ -21,6 +21,7 @@ end
 game:WaitForChild("Players", 10)
 task.wait(1)
 print("findings")
+print(#game.Players:GetPlayers())
 for i,v in game.Players:GetPlayers() do
     if string.match(v.Name , "mini") then
         print("FINDED-----------")
