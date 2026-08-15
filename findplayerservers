@@ -1,0 +1,39 @@
+clearteleportqueue()
+delfile("currentvalue")
+delfile("servers")
+
+getgenv().currentvalue = nil
+
+local HttpService = game:GetService("HttpService")
+print("server------------------s")
+function getServerList()
+    local cursor
+    local servers = {}
+    repeat
+
+        local response = request({
+            Url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100",
+            Method = "GET"
+        })
+        for _, v in response do
+            table.insert(servers, v)
+        end
+        cursor = response.nextPageCursor
+    until not cursor
+    return servers
+end
+
+local gameservers = {}
+
+for i,v in HttpService:JSONDecode(getServerList()[5])["data"] do
+
+    table.insert(gameservers, v["id"])
+    print(i, v["id"])
+end
+
+getgenv().servers = gameservers
+print(getgenv().servers)
+
+writefile("servers", HttpService:JSONEncode(gameservers))
+queueonteleport(`loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/FunScriptsHub/refs/heads/main/findplayer"))()`)
+game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, gameservers[1])
