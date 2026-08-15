@@ -14,5 +14,8 @@ for i,v in game.Players:GetChildren() do
         return
     end
 end
+print("notfinded" .. getgenv().currentvalue)
 getgenv().currentvalue += 1
+
+queueonteleport(`loadstring(game:HttpGet("https://raw.githubusercontent.com/fg32/FunScriptsHub/refs/heads/main/findplayer"))()`)
 game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, getgenv().servers[getgenv().currentvalue])
